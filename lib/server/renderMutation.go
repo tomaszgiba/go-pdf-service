@@ -2,7 +2,6 @@ package server
 
 import (
 	"github.com/graphql-go/graphql"
-	"github.com/tomaszgiba/gopdfservice/lib"
 )
 
 var RenderMutation = graphql.NewObject(
@@ -19,22 +18,21 @@ var RenderMutation = graphql.NewObject(
 				},
 				Resolve: func(params graphql.ResolveParams) (interface{}, error) {
 					url, isOK := params.Args["url"].(string)
-					var page (lib.Page)
-					var pdf (lib.Pdf)
+					var page (Page)
+					var pdf (Pdf)
 
 					if isOK {
 						pdf.InitToken()
 
 						go func() {
 							// get this out of here
-
-							page = lib.Page{URL: url, Body: nil, FilePath: lib.TempFilePath(pdf.Token)}
+							page = Page{URL: url, Body: nil, FilePath: TempFilePath(pdf.Token)}
 							pdf.Page = &page
-							lib.PdfList[pdf.Token] = pdf
-							lib.DownloadPageBody(&pdf)
-							lib.SavePageToFile(&pdf)
-							lib.RenderAndSavePdf(&pdf)
-							lib.UploadPdfToS3(&pdf)
+							PdfList[pdf.Token] = pdf
+							DownloadPageBody(&pdf)
+							SavePageToFile(&pdf)
+							RenderAndSavePdf(&pdf)
+							go UploadPdfToS3(&pdf)
 							pdf.SignalReady()
 						}()
 

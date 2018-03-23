@@ -1,4 +1,4 @@
-package lib
+package server
 
 type Page struct {
 	URL      string

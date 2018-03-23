@@ -2,7 +2,6 @@ package server
 
 import (
 	"github.com/graphql-go/graphql"
-	"github.com/tomaszgiba/gopdfservice/lib"
 )
 
 var PdfQuery = graphql.NewObject(
@@ -19,10 +18,10 @@ var PdfQuery = graphql.NewObject(
 				},
 				Resolve: func(params graphql.ResolveParams) (interface{}, error) {
 					token, isOK := params.Args["token"].(string)
-					var pdf (lib.Pdf)
+					var pdf (Pdf)
 
 					if isOK {
-						pdf = lib.PdfList[token]
+						pdf = PdfList[token]
 					}
 
 					return pdf, nil

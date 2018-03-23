@@ -1,4 +1,4 @@
-package lib
+package server
 
 import (
 	"bytes"
@@ -10,6 +10,7 @@ import (
 	"time"
 
 	wkhtmltopdf "github.com/SebastiaanKlippert/go-wkhtmltopdf"
+	"github.com/tomaszgiba/gopdfservice/lib"
 )
 
 type Pdf struct {
@@ -35,6 +36,7 @@ func init() {
 
 func (pdf *Pdf) SignalReady() {
 	pdf.State = 1
+	fmt.Println("[Server]", "queue", len(PdfList))
 }
 
 func (pdf *Pdf) InitToken() {
@@ -52,7 +54,7 @@ func DownloadPageBody(pdf *Pdf) error {
 
 	response, err := http.Get(page.URL)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("[Server]", pdf.Token, "[1]", err)
 		return err
 	} else {
 		defer response.Body.Close()
@@ -61,7 +63,7 @@ func DownloadPageBody(pdf *Pdf) error {
 		page.Body = body
 
 		if err != nil {
-			log.Fatal(err)
+			log.Fatal("[Server]", pdf.Token, "[1]", err)
 			return err
 		}
 		fmt.Println("[Server]", pdf.Token, "[1]", "Download Successful")
@@ -90,7 +92,7 @@ func RenderAndSavePdf(pdf *Pdf) error {
 
 	pdfg, err := wkhtmltopdf.NewPDFGenerator()
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("[Server]", pdf.Token, "[3]", err)
 		return err
 	}
 
@@ -106,7 +108,7 @@ func RenderAndSavePdf(pdf *Pdf) error {
 	fmt.Println("[Server]", pdf.Token, "[3]", "Writing PDF to file:", pdfPath)
 	err = pdfg.WriteFile(pdfPath)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("[Server]", pdf.Token, "[3]", err)
 		return err
 	}
 
@@ -118,10 +120,10 @@ func UploadPdfToS3(pdf *Pdf) error {
 	pdfPath := TempPdfPath(pdf.Token)
 	fmt.Println("[Server]", pdf.Token, "[4]", "Uploading PDF to S3")
 
-	err := SendToS3(pdfPath)
+	err := lib.SendToS3(pdfPath)
 
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("[Server]", pdf.Token, "[4]", err)
 		return err
 	}
 	fmt.Println("[Server]", pdf.Token, "[4]", "Uploaded PDF with success")

@@ -13,7 +13,7 @@ func Schema() graphql.Schema {
 	schema, err := graphql.NewSchema(schemaConfig)
 
 	if err != nil {
-		log.Fatalf("failed to create new schema, error: %v", err)
+		log.Fatalf("[Server]", "Failed to create new schema, error: %v", err)
 	}
 
 	return schema
