@@ -1,6 +1,7 @@
 package lib
 
 import (
+	"bytes"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -32,6 +33,10 @@ func init() {
 	rand.Seed(time.Now().UnixNano())
 }
 
+func (pdf *Pdf) SignalReady() {
+	pdf.State = 1
+}
+
 func (pdf *Pdf) InitToken() {
 	b := make([]rune, tokenLength)
 	for i := range b {
@@ -40,7 +45,7 @@ func (pdf *Pdf) InitToken() {
 	pdf.Token = string(b)
 }
 
-func DownloadPageBody(pipeline chan Pdf, pdf Pdf) error {
+func DownloadPageBody(pdf *Pdf) error {
 	page := pdf.Page
 
 	fmt.Println("[Server]", pdf.Token, "[1]", "Downloading page from url:", page.URL)
@@ -61,12 +66,10 @@ func DownloadPageBody(pipeline chan Pdf, pdf Pdf) error {
 		}
 		fmt.Println("[Server]", pdf.Token, "[1]", "Download Successful")
 	}
-	pipeline <- pdf
 	return nil
 }
 
-func SavePageToFile(pipeline chan Pdf) error {
-	pdf := <-pipeline
+func SavePageToFile(pdf *Pdf) error {
 	page := pdf.Page
 	fmt.Println("[Server]", pdf.Token, "[2]", "Saving page to path:", page.FilePath)
 
@@ -78,12 +81,10 @@ func SavePageToFile(pipeline chan Pdf) error {
 	} else {
 		fmt.Println("[Server]", pdf.Token, "[2]", "Page saved successfuly to a file")
 	}
-	pipeline <- pdf
 	return nil
 }
 
-func RenderAndSavePdf(pipeline chan Pdf) error {
-	pdf := <-pipeline
+func RenderAndSavePdf(pdf *Pdf) error {
 	page := pdf.Page
 	fmt.Println("[Server]", pdf.Token, "[3]", "Rendering PDF to internal buffer")
 
@@ -93,7 +94,7 @@ func RenderAndSavePdf(pipeline chan Pdf) error {
 		return err
 	}
 
-	pdfg.AddPage(wkhtmltopdf.NewPage(page.FilePath))
+	pdfg.AddPage(wkhtmltopdf.NewPageReader(bytes.NewReader(page.Body)))
 
 	// Create PDF document in internal buffer
 	err = pdfg.Create()
@@ -110,24 +111,20 @@ func RenderAndSavePdf(pipeline chan Pdf) error {
 	}
 
 	fmt.Println("[Server]", pdf.Token, "[3]", "Saved and rendered with success")
-	pipeline <- pdf
 	return nil
 }
 
-func UploadPdfToS3(pipeline chan Pdf) error {
-	pdf := <-pipeline
-	// pdfPath := TempPdfPath(pdf.Token)
+func UploadPdfToS3(pdf *Pdf) error {
+	pdfPath := TempPdfPath(pdf.Token)
 	fmt.Println("[Server]", pdf.Token, "[4]", "Uploading PDF to S3")
 
-	time.Sleep(time.Second * 1)
-	// err := SendToS3(pdfPath)
+	err := SendToS3(pdfPath)
 
-	// if err != nil {
-	// 	log.Fatal(err)
-	// 	return err
-	// }
+	if err != nil {
+		log.Fatal(err)
+		return err
+	}
 	fmt.Println("[Server]", pdf.Token, "[4]", "Uploaded PDF with success")
 
-	<-pipeline
 	return nil
 }
