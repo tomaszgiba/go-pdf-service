@@ -25,8 +25,6 @@ var pdfType = graphql.NewObject(
 	},
 )
 
-var pageChannel = make(chan *lib.Page)
-
 var pdfQuery = graphql.NewObject(
 	graphql.ObjectConfig{
 		Name: "Query",
@@ -72,11 +70,17 @@ var renderMutation = graphql.NewObject(
 					var pdf (lib.Pdf)
 
 					if isOK {
+						// get this out of here
 						pdf.InitToken()
-						page = lib.Page{URL: url, Body: nil}
+
+						page = lib.Page{URL: url, Body: nil, FilePath: lib.TempFilePath(pdf.Token)}
 						pdf.Page = &page
-						lib.PdfList[pdf.Token] = pdf
-						go page.DownloadBody(pageChannel)
+						pipeline := make(chan lib.Pdf)
+
+						go lib.DownloadPageBody(pipeline, pdf)
+						go lib.SavePageToFile(pipeline)
+						go lib.RenderAndSavePdf(pipeline)
+						go lib.UploadPdfToS3(pipeline)
 					}
 
 					return pdf, nil
