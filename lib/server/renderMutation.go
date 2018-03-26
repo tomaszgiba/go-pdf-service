@@ -22,7 +22,7 @@ var RenderMutation = graphql.NewObject(
 					var pdf (Pdf)
 
 					if isOK {
-						pdf.InitToken()
+						pdf.Init()
 
 						go func() {
 							// get this out of here
@@ -33,7 +33,7 @@ var RenderMutation = graphql.NewObject(
 							SavePageToFile(&pdf)
 							RenderAndSavePdf(&pdf)
 							go UploadPdfToS3(&pdf)
-							pdf.SignalReady()
+							pdf.Finalize()
 						}()
 
 					}

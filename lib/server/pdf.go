@@ -34,9 +34,8 @@ func init() {
 	rand.Seed(time.Now().UnixNano())
 }
 
-func (pdf *Pdf) SignalReady() {
-	pdf.State = 1
-	fmt.Println("[Server]", "queue", len(PdfList))
+func (pdf *Pdf) Init() {
+	pdf.InitToken()
 }
 
 func (pdf *Pdf) InitToken() {
@@ -45,6 +44,10 @@ func (pdf *Pdf) InitToken() {
 		b[i] = letterRunes[rand.Intn(len(letterRunes))]
 	}
 	pdf.Token = string(b)
+}
+
+func (pdf *Pdf) Finalize() {
+	pdf.State = 1
 }
 
 func DownloadPageBody(pdf *Pdf) error {

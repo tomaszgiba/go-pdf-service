@@ -27,5 +27,12 @@ var PdfQuery = graphql.NewObject(
 					return pdf, nil
 				},
 			},
+			"all": &graphql.Field{
+				Type:        graphql.NewList(PdfType),
+				Description: "List of all PDFs",
+				Resolve: func(params graphql.ResolveParams) (interface{}, error) {
+					return PdfList, nil
+				},
+			},
 		},
 	})
