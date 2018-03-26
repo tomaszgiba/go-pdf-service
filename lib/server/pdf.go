@@ -10,7 +10,7 @@ import (
 	"time"
 
 	wkhtmltopdf "github.com/SebastiaanKlippert/go-wkhtmltopdf"
-	"github.com/tomaszgiba/gopdfservice/lib"
+	"github.com/tomaszgiba/go-pdf-service/lib"
 )
 
 type Pdf struct {

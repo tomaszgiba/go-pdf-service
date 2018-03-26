@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	gqlhandler "github.com/graphql-go/handler"
-	s "github.com/tomaszgiba/gopdfservice/lib/server"
+	s "github.com/tomaszgiba/go-pdf-service/lib/server"
 )
 
 func main() {
