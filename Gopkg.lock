@@ -16,8 +16,8 @@
 [[projects]]
   name = "github.com/aws/aws-sdk-go"
   packages = ["."]
-  revision = "f0872da8a448f8cb10f4f0c95c2100e4f7356448"
-  version = "v1.13.16"
+  revision = "c8c4e0c0514d87f930c1342fef390db5329928b7"
+  version = "v1.13.20"
 
 [[projects]]
   name = "github.com/graphql-go/graphql"
