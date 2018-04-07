@@ -1,4 +1,4 @@
-package server
+package model
 
 import (
 	"bytes"
@@ -10,7 +10,7 @@ import (
 	"time"
 
 	wkhtmltopdf "github.com/SebastiaanKlippert/go-wkhtmltopdf"
-	"github.com/tomaszgiba/go-pdf-service/lib"
+	"github.com/tomaszgiba/go-pdf-service/lib/providers"
 )
 
 type Pdf struct {
@@ -123,7 +123,7 @@ func UploadPdfToS3(pdf *Pdf) error {
 	pdfPath := TempPdfPath(pdf.Token)
 	fmt.Println("[Server]", pdf.Token, "[4]", "Uploading PDF to S3")
 
-	err := lib.SendToS3(pdfPath)
+	err := providers.SendToS3(pdfPath)
 
 	if err != nil {
 		log.Fatal("[Server]", pdf.Token, "[4]", err)

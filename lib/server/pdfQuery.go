@@ -2,6 +2,7 @@ package server
 
 import (
 	"github.com/graphql-go/graphql"
+	"github.com/tomaszgiba/go-pdf-service/lib/model"
 )
 
 var PdfQuery = graphql.NewObject(
@@ -18,10 +19,10 @@ var PdfQuery = graphql.NewObject(
 				},
 				Resolve: func(params graphql.ResolveParams) (interface{}, error) {
 					token, isOK := params.Args["token"].(string)
-					var pdf (Pdf)
+					var pdf (model.Pdf)
 
 					if isOK {
-						pdf = PdfList[token]
+						pdf = model.PdfList[token]
 					}
 
 					return pdf, nil
@@ -31,7 +32,7 @@ var PdfQuery = graphql.NewObject(
 				Type:        graphql.NewList(PdfType),
 				Description: "List of all PDFs",
 				Resolve: func(params graphql.ResolveParams) (interface{}, error) {
-					return PdfList, nil
+					return model.PdfList, nil
 				},
 			},
 		},

@@ -1,6 +1,8 @@
-package lib
+package providers
 
-import "time"
+import (
+	"time"
+)
 
 const s3Region = "eu-central-1"
 const s3Bucket = "sandbox75982"
