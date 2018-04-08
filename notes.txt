@@ -1,6 +1,7 @@
 GraphQL
 
 ###
+Idea:
 
 /graphql/pdf
 ( render(url: 'http://reddit.com/') ) 

@@ -2,6 +2,8 @@
 
 run: `go run main.go`
 
+**Goal**: to have PDF microservice, that is easily deployable to AWS, fast and easy to set up.
+
 
 ### to send PDF to render:
 
@@ -9,6 +11,12 @@ run: `go run main.go`
 curl -XPOST http://localhost:8080/graphql/pdf/ \
 	-H 'Content-Type: application/graphql' \
 	-d 'mutation { render(url: "https://golang.org/pkg/time/"){url, token, state} }'
+```
+
+or: 
+
+```
+curl -g 'http://localhost:8080/graphql/pdf/?query=mutation+_{render(url:"https://golang.org/pkg/time/"){token}}'
 ```
 and you will a token
 
