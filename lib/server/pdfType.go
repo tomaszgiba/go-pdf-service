@@ -15,6 +15,9 @@ var PdfType = graphql.NewObject(
 			"url": &graphql.Field{
 				Type: graphql.String,
 			},
+			"expires": &graphql.Field{
+				Type: graphql.DateTime,
+			},
 		},
 	},
 )

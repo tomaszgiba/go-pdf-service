@@ -19,13 +19,13 @@ var PdfQuery = graphql.NewObject(
 				},
 				Resolve: func(params graphql.ResolveParams) (interface{}, error) {
 					token, isOK := params.Args["token"].(string)
-					var pdf (model.Pdf)
 
 					if isOK {
-						pdf = model.PdfList[token]
+						pdf := model.PdfList[token]
+						return pdf, nil
+					} else {
+						return nil, nil
 					}
-
-					return pdf, nil
 				},
 			},
 			"all": &graphql.Field{

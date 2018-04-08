@@ -13,3 +13,8 @@ func TempFilePath(token string) string {
 
 	return path
 }
+
+func (page *Page) Init(url string, body []byte) {
+	page.URL = url
+	page.Body = body
+}

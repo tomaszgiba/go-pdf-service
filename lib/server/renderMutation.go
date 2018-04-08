@@ -16,27 +16,27 @@ var RenderMutation = graphql.NewObject(
 					"url": &graphql.ArgumentConfig{
 						Type: graphql.NewNonNull(graphql.String),
 					},
+					"expires_in": &graphql.ArgumentConfig{
+						Type: graphql.NewNonNull(graphql.Int),
+					},
 				},
 				Resolve: func(params graphql.ResolveParams) (interface{}, error) {
+					var isOK = true
 					url, isOK := params.Args["url"].(string)
+					expiresIn, isOK := params.Args["expires_in"].(int)
 					var page (model.Page)
 					var pdf (model.Pdf)
 
 					if isOK {
-						pdf.Init()
-
+						page.Init(url, nil)
+						pdf.Init(&page, expiresIn)
 						go func() {
-							// get this out of here
-							page = model.Page{URL: url, Body: nil, FilePath: model.TempFilePath(pdf.Token)}
-							pdf.Page = &page
-							model.PdfList[pdf.Token] = pdf
-							model.DownloadPageBody(&pdf)
-							model.SavePageToFile(&pdf)
-							model.RenderAndSavePdf(&pdf)
-							go model.UploadPdfToS3(&pdf)
+							pdf.DownloadPageBody()
+							pdf.SavePageToFile()
+							pdf.RenderAndSavePdf()
+							go pdf.UploadPdfToS3() // WARN: first delegate upload, then set expire
 							pdf.Finalize()
 						}()
-
 					}
 
 					return pdf, nil

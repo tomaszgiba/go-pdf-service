@@ -10,14 +10,19 @@ import (
 	"time"
 
 	wkhtmltopdf "github.com/SebastiaanKlippert/go-wkhtmltopdf"
+	"github.com/tomaszgiba/go-pdf-service/lib/converters"
 	"github.com/tomaszgiba/go-pdf-service/lib/providers"
 )
 
 type Pdf struct {
-	Page  *Page
-	Token string `json:"token"`
-	State int    `json:"state"`
-	URL   string `json:"url"`
+	Page      *Page
+	Token     string    `json:"token"`
+	State     int       `json:"state"`
+	URL       string    `json:"url"` // URL @ aws S3
+	Expires   time.Time `json:"expires"`
+	ExpiresIn int       `json:"expires_in"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
 func TempPdfPath(token string) string {
@@ -25,7 +30,9 @@ func TempPdfPath(token string) string {
 	return path
 }
 
-var PdfList = make(map[string]Pdf)
+type callback func()
+
+var PdfList = make(map[string]*Pdf)
 var letterRunes = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
 
 const tokenLength = 12
@@ -34,8 +41,14 @@ func init() {
 	rand.Seed(time.Now().UnixNano())
 }
 
-func (pdf *Pdf) Init() {
+func (pdf *Pdf) Init(page *Page, expiresIn int) {
 	pdf.InitToken()
+	pdf.ExpiresIn = expiresIn
+	page.FilePath = TempFilePath(pdf.Token) // WARN: page depends on a pdf.token
+	pdf.Page = page
+	PdfList[pdf.Token] = pdf
+	pdf.CreatedAt = time.Now()
+	pdf.Expires = converters.ExpiresToTime(pdf.ExpiresIn, pdf.CreatedAt)
 }
 
 func (pdf *Pdf) InitToken() {
@@ -50,7 +63,7 @@ func (pdf *Pdf) Finalize() {
 	pdf.State = 1
 }
 
-func DownloadPageBody(pdf *Pdf) error {
+func (pdf *Pdf) DownloadPageBody() error {
 	page := pdf.Page
 
 	fmt.Println("[Server]", pdf.Token, "[1]", "Downloading page from url:", page.URL)
@@ -74,7 +87,7 @@ func DownloadPageBody(pdf *Pdf) error {
 	return nil
 }
 
-func SavePageToFile(pdf *Pdf) error {
+func (pdf *Pdf) SavePageToFile() error {
 	page := pdf.Page
 	fmt.Println("[Server]", pdf.Token, "[2]", "Saving page to path:", page.FilePath)
 
@@ -89,7 +102,7 @@ func SavePageToFile(pdf *Pdf) error {
 	return nil
 }
 
-func RenderAndSavePdf(pdf *Pdf) error {
+func (pdf *Pdf) RenderAndSavePdf() error {
 	page := pdf.Page
 	fmt.Println("[Server]", pdf.Token, "[3]", "Rendering PDF to internal buffer")
 
@@ -119,7 +132,7 @@ func RenderAndSavePdf(pdf *Pdf) error {
 	return nil
 }
 
-func UploadPdfToS3(pdf *Pdf) error {
+func (pdf *Pdf) UploadPdfToS3() error {
 	pdfPath := TempPdfPath(pdf.Token)
 	fmt.Println("[Server]", pdf.Token, "[4]", "Uploading PDF to S3")
 
